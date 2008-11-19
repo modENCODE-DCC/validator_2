@@ -279,13 +279,13 @@ sub destroy {
 sub save_db {
   my $db = shift;
   $queries{'db_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO db (name, url, description) VALUES(?, ?, ?)') unless $queries{'db_ins'};
-  $queries{'db_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE db SET name = ?, url = ?, description = ? WHERE db_id = ?') unless $queries{'db_upd'};
+  $queries{'db_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE db SET name = ?, url = ?, description = ? WHERE db_id = ? LIMIT 1') unless $queries{'db_upd'};
   modification_notification();
   if (!$db->get_id()) {
     $queries{'db_ins'}->execute($db->get_name, $db->get_url, $db->get_description);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $db->set_id($id);
-    log_error "Saving " . $db->get_name() . " with id $id.", "debug";
+    log_error "Saving db " . $db->get_name() . " with id $id.", "debug";
     return $id;
   } else {
     my $id = $db->get_id();
@@ -377,13 +377,13 @@ sub add_cv_to_cache {
 sub save_cv {
   my $cv = shift;
   $queries{'cv_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO cv (name, definition) VALUES(?, ?)') unless $queries{'cv_ins'};
-  $queries{'cv_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE cv SET name = ?, definition = ? WHERE cv_id = ?') unless $queries{'cv_upd'};
+  $queries{'cv_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE cv SET name = ?, definition = ? WHERE cv_id = ? LIMIT 1') unless $queries{'cv_upd'};
   modification_notification();
   if (!$cv->get_id()) {
     $queries{'cv_ins'}->execute($cv->get_name, $cv->get_definition);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $cv->set_id($id);
-    log_error "Saving " . $cv->get_name() . " with id $id.", "debug";
+    log_error "Saving cv " . $cv->get_name() . " with id $id.", "debug";
     return $id;
   } else {
     my $id = $cv->get_id();
@@ -419,13 +419,13 @@ sub update_dbxref {
 sub save_dbxref {
   my $dbxref = shift;
   $queries{'dbxref_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO dbxref (accession, version, db_id) VALUES(?, ?, ?)') unless $queries{'dbxref_ins'};
-  $queries{'dbxref_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE dbxref SET accession = ?, version = ?, db_id = ? WHERE dbxref_id = ?') unless $queries{'dbxref_upd'};
+  $queries{'dbxref_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE dbxref SET accession = ?, version = ?, db_id = ? WHERE dbxref_id = ? LIMIT 1') unless $queries{'dbxref_upd'};
   modification_notification();
   if (!$dbxref->get_id()) {
     $queries{'dbxref_ins'}->execute($dbxref->get_accession, $dbxref->get_version, $dbxref->get_db_id);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $dbxref->set_id($id);
-    log_error "Saving " . $dbxref->get_accession() . " with id $id.", "debug";
+    log_error "Saving dbxref " . $dbxref->get_accession() . " with id $id.", "debug";
     return $id;
   } else {
     my $id = $dbxref->get_id();
@@ -463,13 +463,13 @@ sub add_cvterm_to_cache {
 sub save_cvterm {
   my $cvterm = shift;
   $queries{'cvterm_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO cvterm (name, is_obsolete, definition, cv_id, dbxref_id) VALUES(?, ?, ?, ?, ?)') unless $queries{'cvterm_ins'};
-  $queries{'cvterm_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE cvterm SET name = ?, is_obsolete = ?, definition = ?, cv_id = ?, dbxref_id = ? WHERE cvterm_id = ?') unless $queries{'cvterm_upd'};
+  $queries{'cvterm_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE cvterm SET name = ?, is_obsolete = ?, definition = ?, cv_id = ?, dbxref_id = ? WHERE cvterm_id = ? LIMIT 1') unless $queries{'cvterm_upd'};
   modification_notification();
   if (!$cvterm->get_id()) {
     $queries{'cvterm_ins'}->execute($cvterm->get_name, $cvterm->get_is_obsolete, $cvterm->get_definition, $cvterm->get_cv_id, $cvterm->get_dbxref_id);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $cvterm->set_id($id);
-    log_error "Saving " . $cvterm->get_name() . " with id $id.", "debug";
+    log_error "Saving cvterm " . $cvterm->get_name() . " with id $id.", "debug";
     return $id;
   } else {
     my $id = $cvterm->get_id();
@@ -508,13 +508,13 @@ sub add_experimentprop_to_cache {
 sub save_experimentprop {
   my $experimentprop = shift;
   $queries{'experimentprop_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO experimentprop (name, value, rank, termsource_id, type_id, experiment_id) VALUES(?, ?, ?, ?, ?, ?)') unless $queries{'experimentprop_ins'};
-  $queries{'experimentprop_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE experimentprop SET name = ?, value = ?, rank = ?, termsource_id = ?, type_id = ?, experiment_id = ? WHERE experimentprop_id = ?') unless $queries{'experimentprop_upd'};
+  $queries{'experimentprop_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE experimentprop SET name = ?, value = ?, rank = ?, termsource_id = ?, type_id = ?, experiment_id = ? WHERE experimentprop_id = ? LIMIT 1') unless $queries{'experimentprop_upd'};
   modification_notification();
   if (!$experimentprop->get_id()) {
     $queries{'experimentprop_ins'}->execute($experimentprop->get_name, $experimentprop->get_value, $experimentprop->get_rank, $experimentprop->get_termsource_id, $experimentprop->get_type_id, $experimentprop->get_experiment_id);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $experimentprop->set_id($id);
-    log_error "Saving " . $experimentprop->get_name() . " with id $id.", "debug";
+    log_error "Saving experimentprop " . $experimentprop->get_name() . " with id $id.", "debug";
     return $id;
   } else {
     my $id = $experimentprop->get_id();
@@ -558,7 +558,7 @@ sub add_experiment_to_cache {
 sub save_experiment {
   my $experiment = shift;
   $queries{'experiment_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO experiment (uniquename, description) VALUES(?, ?)') unless $queries{'experiment_ins'};
-  $queries{'experiment_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE experiment SET uniquename = ?, description = ? WHERE experiment_id = ?') unless $queries{'experiment_upd'};
+  $queries{'experiment_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE experiment SET uniquename = ?, description = ? WHERE experiment_id = ? LIMIT 1') unless $queries{'experiment_upd'};
   modification_notification();
   if (!$experiment->get_id()) {
     $queries{'experiment_ins'}->execute($experiment->get_uniquename, $experiment->get_description);
@@ -601,7 +601,7 @@ sub add_protocol_to_cache {
 sub save_protocol {
   my $protocol = shift;
   $queries{'protocol_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO protocol (name, version, description, dbxref_id) VALUES(?, ?, ?, ?)') unless $queries{'protocol_ins'};
-  $queries{'protocol_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE protocol SET name = ?, version = ?, description = ?, dbxref_id = ? WHERE protocol_id = ?') unless $queries{'protocol_upd'};
+  $queries{'protocol_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE protocol SET name = ?, version = ?, description = ?, dbxref_id = ? WHERE protocol_id = ? LIMIT 1') unless $queries{'protocol_upd'};
   $queries{'get_protocol_attributes'} = ModENCODE::Cache::dbh->prepare('SELECT attribute_id FROM protocol_attribute WHERE attribute_id = ?') unless $queries{'get_protocol_attributes'};
   $queries{'del_protocol_attributes'} = ModENCODE::Cache::dbh->prepare('DELETE FROM protocol_attribute WHERE protocol_id = ?') unless $queries{'del_protocol_attributes'};
   $queries{'add_protocol_attribute'} = ModENCODE::Cache::dbh->prepare('INSERT INTO protocol_attribute (protocol_id, attribute_id) VALUES(?, ?)') unless $queries{'add_protocol_attribute'};
@@ -610,7 +610,7 @@ sub save_protocol {
     $queries{'protocol_ins'}->execute($protocol->get_name, $protocol->get_version, $protocol->get_description, $protocol->get_termsource_id);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $protocol->set_id($id);
-    log_error "Saving " . $protocol->get_name() . " with id $id.", "debug";
+    log_error "Saving protocol " . $protocol->get_name() . " with id $id.", "debug";
   } else {
     my $id = $protocol->get_id();
     $queries{'protocol_upd'}->execute($protocol->get_name, $protocol->get_version, $protocol->get_description, $protocol->get_termsource_id, $id);
@@ -677,13 +677,13 @@ sub add_organism_to_cache {
 sub save_organism {
   my $organism = shift;
   $queries{'organism_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO organism (genus, species) VALUES(?, ?)') unless $queries{'organism_ins'};
-  $queries{'organism_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE organism SET genus = ?, species = ? WHERE organism_id = ?') unless $queries{'organism_upd'};
+  $queries{'organism_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE organism SET genus = ?, species = ? WHERE organism_id = ? LIMIT 1') unless $queries{'organism_upd'};
   modification_notification();
   if (!$organism->get_id()) {
     $queries{'organism_ins'}->execute($organism->get_genus, $organism->get_species);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $organism->set_id($id);
-    log_error "Saving " . $organism->get_genus() . " " . $organism->get_species() . " with id $id.", "debug";
+    log_error "Saving organism " . $organism->get_genus() . " " . $organism->get_species() . " with id $id.", "debug";
     return $id;
   } else {
     my $id = $organism->get_id();
@@ -698,7 +698,7 @@ sub save_organism {
 sub save_attribute {
   my $attribute = shift;
   $queries{'attribute_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO attribute (heading, name, value, rank, termsource_id, type_id) VALUES(?, ?, ?, ?, ?, ?)') unless $queries{'attribute_ins'};
-  $queries{'attribute_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE attribute SET heading = ?, name = ?, value = ?, rank = ?, termsource_id = ?, type_id = ? WHERE attribute_id = ?') unless $queries{'attribute_upd'};
+  $queries{'attribute_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE attribute SET heading = ?, name = ?, value = ?, rank = ?, termsource_id = ?, type_id = ? WHERE attribute_id = ? LIMIT 1') unless $queries{'attribute_upd'};
   $queries{'del_attribute_organisms'} = ModENCODE::Cache::dbh->prepare('DELETE FROM attribute_organism WHERE attribute_id = ?') unless $queries{'del_attribute_organisms'};
   $queries{'add_attribute_organisms'} = ModENCODE::Cache::dbh->prepare('INSERT INTO attribute_organism (attribute_id, organism_id) VALUES(?, ?)') unless $queries{'add_attribute_organisms'};
   modification_notification();
@@ -870,7 +870,7 @@ sub update_datum {
 sub save_datum {
   my $datum = shift;
   $queries{'datum_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO data (heading, name, value, anonymous, termsource_id, type_id) VALUES(?, ?, ?, ?, ?, ?)') unless $queries{'datum_ins'};
-  $queries{'datum_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE data SET heading = ?, name = ?, value = ?, anonymous = ?, termsource_id = ?, type_id = ? WHERE data_id = ?') unless $queries{'datum_upd'};
+  $queries{'datum_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE data SET heading = ?, name = ?, value = ?, anonymous = ?, termsource_id = ?, type_id = ? WHERE data_id = ? LIMIT 1') unless $queries{'datum_upd'};
   $queries{'del_datum_attributes'} = ModENCODE::Cache::dbh->prepare('DELETE FROM data_attribute WHERE data_id = ?') unless $queries{'del_datum_attributes'};
   $queries{'add_datum_attributes'} = ModENCODE::Cache::dbh->prepare('INSERT INTO data_attribute (data_id, attribute_id) VALUES(?, ?)') unless $queries{'add_datum_attributes'};
   $queries{'del_datum_features'} = ModENCODE::Cache::dbh->prepare('DELETE FROM data_feature WHERE data_id = ?') unless $queries{'del_datum_features'};
@@ -884,7 +884,7 @@ sub save_datum {
     $queries{'datum_ins'}->execute($datum->get_heading, $datum->get_name, $datum->get_value, $datum->is_anonymous, $datum->get_termsource_id, $datum->get_type_id);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $datum->set_id($id);
-    log_error "Saving " . $datum->get_heading . "[" . $datum->get_name . "] with id $id.", "debug";
+    log_error "Saving datum " . $datum->get_heading . "[" . $datum->get_name . "] with id $id.", "debug";
     $queries{'del_datum_attributes'}->execute($datum->get_id);
     foreach my $attribute_id ($datum->get_attribute_ids) {
       modification_notification();
@@ -1000,7 +1000,7 @@ sub save_wiggle_data {
     ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)') unless $queries{'wiggle_data_ins'};
   $queries{'wiggle_data_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE wiggle_data SET 
     datum_id = ?, name = ?, type = ?, visibility = ?, color = ?, altColor = ?, priority = ?, autoscale = ?, gridDefault = ?, maxHeightPixels = ?, graphType = ?, viewLimits = ?, yLineMark = ?, yLineOnOff = ?, windowingFunction = ?, smoothingWindow = ?, data = ?
-    WHERE wiggle_data_id = ?') unless $queries{'wiggle_data_upd'};
+    WHERE wiggle_data_id = ? LIMIT 1') unless $queries{'wiggle_data_upd'};
 
   modification_notification();
   if (!$wiggle_data->get_id()) {
@@ -1063,7 +1063,7 @@ sub add_feature_to_cache {
 sub save_feature {
   my $feature = shift;
   $queries{'feature_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO feature (name, uniquename, residues, seqlen, timeaccessioned, timelastmodified, is_analysis, dbxref_id, organism_id, type_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)') unless $queries{'feature_ins'};
-  $queries{'feature_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE feature SET name = ?, uniquename = ?, residues = ?, seqlen = ?, timeaccessioned = ?, timelastmodified = ?, is_analysis = ?, dbxref_id = ?, organism_id = ?, type_id = ?  WHERE feature_id = ?') unless $queries{'feature_upd'};
+  $queries{'feature_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE feature SET name = ?, uniquename = ?, residues = ?, seqlen = ?, timeaccessioned = ?, timelastmodified = ?, is_analysis = ?, dbxref_id = ?, organism_id = ?, type_id = ?  WHERE feature_id = ? LIMIT 1') unless $queries{'feature_upd'};
 
   # Featurelocs
   $queries{'del_feature_locs'} = ModENCODE::Cache::dbh->prepare('DELETE FROM featureloc WHERE feature_id = ?') unless $queries{'del_feature_locs'};
@@ -1086,7 +1086,7 @@ sub save_feature {
     $queries{'feature_ins'}->execute($feature->get_name, $feature->get_uniquename, $feature->get_residues, $feature->get_seqlen, $feature->get_timeaccessioned, $feature->get_timelastmodified, $feature->get_is_analysis, $feature->get_primary_dbxref_id, $feature->get_organism_id, $feature->get_type_id);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $feature->set_id($id);
-    log_error "Saving " . $feature->get_uniquename() . " with id $id.", "debug";
+    log_error "Saving feature " . $feature->get_uniquename() . " with id $id.", "debug";
   } else {
     modification_notification();
     my $id = $feature->get_id();
@@ -1216,13 +1216,13 @@ sub add_analysis_to_cache {
 sub save_analysis {
   my $analysis = shift;
   $queries{'analysis_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO analysis (program, programversion, sourcename, name, description, algorithm, sourceversion, sourceuri, timeexecuted) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)') unless $queries{'analysis_ins'};
-  $queries{'analysis_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE analysis SET program = ?, programversion = ?, sourcename = ?, name = ?, description = ?, algorithm = ?, sourceversion = ?, sourceuri = ?, timeexecuted = ?  WHERE analysis_id = ?') unless $queries{'analysis_upd'};
+  $queries{'analysis_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE analysis SET program = ?, programversion = ?, sourcename = ?, name = ?, description = ?, algorithm = ?, sourceversion = ?, sourceuri = ?, timeexecuted = ?  WHERE analysis_id = ? LIMIT 1') unless $queries{'analysis_upd'};
   modification_notification();
   if (!$analysis->get_id()) {
     $queries{'analysis_ins'}->execute($analysis->get_program, $analysis->get_programversion, $analysis->get_sourcename, $analysis->get_name, $analysis->get_description, $analysis->get_algorithm, $analysis->get_sourceversion, $analysis->get_sourceuri, $analysis->get_timeexecuted);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $analysis->set_id($id);
-    log_error "Saving " . $analysis->get_program() . " with id $id.", "debug";
+    log_error "Saving analysis " . $analysis->get_program() . " with id $id.", "debug";
     return $id;
   } else {
     my $id = $analysis->get_id();
@@ -1262,7 +1262,7 @@ sub save_placeholder_feature_relationship {
 
 sub save_feature_relationship {
   my $feature_relationship = shift;
-  $queries{'feature_relationship_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE feature_relationship SET subject_id = ?, object_id = ?, type_id = ?, rank = ? WHERE feature_relationship_id = ?') unless $queries{'feature_relationship_upd'};
+  $queries{'feature_relationship_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE feature_relationship SET subject_id = ?, object_id = ?, type_id = ?, rank = ? WHERE feature_relationship_id = ? LIMIT 1') unless $queries{'feature_relationship_upd'};
 
   if (!$feature_relationship->get_id()) {
     croak "How did I get here?";
