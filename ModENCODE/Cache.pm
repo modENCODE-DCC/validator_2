@@ -31,7 +31,8 @@ use ModENCODE::Chado::Analysis;
 use ModENCODE::Chado::AnalysisFeature;
 use ModENCODE::Chado::FeatureLoc;
 
-use constant DEBUG => 1;
+use constant DEBUG => 0;
+
 my $dbh;
 my $db_tempfile;
 my %queries;
@@ -41,13 +42,15 @@ my $query_count = 0;
 sub dbh {
   unless ($dbh) {
     my ($undef, $filename) = File::Temp::tempfile();
-    $filename = "/tmp/useme.sql";
+#    $filename = "/tmp/useme.sql";
     if (-e $filename) { unlink $filename; }
     $db_tempfile = $filename;
-    $dbh = DBI->connect("dbi:SQLite:dbname=$filename", '', '');
+    $dbh = DBI->connect("dbi:SQLite:dbname=$filename", '', '', { AutoCommit => 0 });
     $dbh->do("PRAGMA synchronous = OFF");
+    $dbh->do("PRAGMA default_synchronous = OFF");
+    $dbh->do("PRAGMA temp_store = MEMORY"); # Store indices in memory
     $dbh->do("PRAGMA count_changes = 0");
-    $dbh->do("BEGIN TRANSACTION");
+    $dbh->do("PRAGMA journal_mode = OFF");
   }
   return $dbh;
 }
@@ -71,7 +74,7 @@ sub get_all_objects {
 
 sub init_schema {
   my @create_tables = (
-    'CREATE TEMP TABLE analysis (    
+    'CREATE TABLE analysis (    
         analysis_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         description TEXT,
@@ -83,7 +86,7 @@ sub init_schema {
         sourceuri text,
         timeexecuted timestamp
     )',
-    'CREATE TEMP TABLE analysisfeature (
+    'CREATE TABLE analysisfeature (
         analysisfeature_id INTEGER PRIMARY KEY,
         rawscore DOUBLE,
         normscore DOUBLE,
@@ -92,19 +95,19 @@ sub init_schema {
         feature_id INTEGER,
         analysis_id INTEGER
     )',
-    'CREATE TEMP TABLE applied_protocol (
+    'CREATE TABLE applied_protocol (
         applied_protocol_id INTEGER PRIMARY KEY,
         protocol_id INTEGER
     )',
-    'CREATE TEMP TABLE input_data (
+    'CREATE TABLE input_data (
         applied_protocol_id INTEGER,
         data_id INTEGER
     )',
-    'CREATE TEMP TABLE output_data (
+    'CREATE TABLE output_data (
         applied_protocol_id INTEGER,
         data_id INTEGER
     )',
-    'CREATE TEMP TABLE attribute (
+    'CREATE TABLE attribute (
         attribute_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         heading VARCHAR(255),
@@ -113,16 +116,16 @@ sub init_schema {
         termsource_id INTEGER,
         type_id INTEGER
     )',
-    'CREATE TEMP TABLE attribute_organism (
+    'CREATE TABLE attribute_organism (
         attribute_id INTEGER,
         organism_id INTEGER
     )',
-    'CREATE TEMP TABLE cv (
+    'CREATE TABLE cv (
         cv_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         definition TEXT
     )',
-    'CREATE TEMP TABLE cvterm (
+    'CREATE TABLE cvterm (
         cvterm_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         definition TEXT,
@@ -130,7 +133,7 @@ sub init_schema {
         cv_id INTEGER,
         dbxref_id INTEGER
     )',
-    'CREATE TEMP TABLE data (
+    'CREATE TABLE data (
         data_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         heading VARCHAR(255),
@@ -139,40 +142,40 @@ sub init_schema {
         termsource_id INTEGER, 
         type_id INTEGER
     )',
-    'CREATE TEMP TABLE data_attribute (
+    'CREATE TABLE data_attribute (
         data_id INTEGER,
         attribute_id INTEGER
     )',
-    'CREATE TEMP TABLE data_feature (
+    'CREATE TABLE data_feature (
         data_id INTEGER,
         feature_id INTEGER
     )',
-    'CREATE TEMP TABLE data_wiggle (
+    'CREATE TABLE data_wiggle (
         data_id INTEGER,
         wiggle_id INTEGER
     )',
-    'CREATE TEMP TABLE data_organism (
+    'CREATE TABLE data_organism (
         data_id INTEGER,
         organism_id INTEGER
     )',
-    'CREATE TEMP TABLE db (
+    'CREATE TABLE db (
         db_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         url VARCHAR(255),
         description TEXT
     )',
-    'CREATE TEMP TABLE dbxref (
+    'CREATE TABLE dbxref (
         dbxref_id INTEGER PRIMARY KEY,
         accession VARCHAR(255),
         version INTEGER,
         db_id INTEGER
     )',
-    'CREATE TEMP TABLE experiment (
+    'CREATE TABLE experiment (
         experiment_id INTEGER PRIMARY KEY,
         uniquename VARCHAR(255),
         description TEXT
     )',
-    'CREATE TEMP TABLE experimentprop (
+    'CREATE TABLE experimentprop (
         experimentprop_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         value TEXT,
@@ -181,12 +184,12 @@ sub init_schema {
         termsource_id INTEGER,
         type_id INTEGER
     )',
-    'CREATE TEMP TABLE experiment_applied_protocol (
+    'CREATE TABLE experiment_applied_protocol (
         experiment_id INTEGER,
         applied_protocol_id INTEGER,
         column_index INTEGER
     )',
-    'CREATE TEMP TABLE feature (
+    'CREATE TABLE feature (
         feature_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         uniquename VARCHAR(255),
@@ -199,7 +202,7 @@ sub init_schema {
         organism_id INTEGER,
         type_id INTEGER
     )',
-    'CREATE TEMP TABLE featureloc (
+    'CREATE TABLE featureloc (
         featureloc_id INTEGER PRIMARY KEY,
         feature_id INTEGER,
         fmin INTEGER,
@@ -208,38 +211,39 @@ sub init_schema {
         strand INTEGER,
         srcfeature_id INTEGER
     )',
-    'CREATE TEMP TABLE feature_feature_relationship (
+    'CREATE TABLE feature_feature_relationship (
         feature_id INTEGER,
         feature_relationship_id INTEGER
     )',
-    'CREATE TEMP TABLE feature_relationship (
+    'CREATE TABLE feature_relationship (
         feature_relationship_id INTEGER PRIMARY KEY,
         subject_id INTEGER,
         object_id INTEGER,
         type_id INTEGER,
         rank INTEGER
     )',
-    'CREATE TEMP TABLE feature_dbxref (
+    'CREATE TABLE feature_dbxref (
         feature_id INTEGER,
-        dbxref_id INTEGER
+        dbxref_id INTEGER,
+        PRIMARY KEY(feature_id, dbxref_id)
     )',
-    'CREATE TEMP TABLE organism (
+    'CREATE TABLE organism (
         organism_id INTEGER PRIMARY KEY,
         genus VARCHAR(255),
         species VARCHAR(255)
     )',
-    'CREATE TEMP TABLE protocol (
+    'CREATE TABLE protocol (
         protocol_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         version INTEGER,
         description TEXT,
         dbxref_id INTEGER
     )',
-    'CREATE TEMP TABLE protocol_attribute (
+    'CREATE TABLE protocol_attribute (
         protocol_id  INTEGER,
         attribute_id INTEGER
     )',
-    'CREATE TEMP TABLE wiggle_data (
+    'CREATE TABLE wiggle_data (
         wiggle_data_id INTEGER PRIMARY KEY,
         name VARCHAR(255),
         type VARCHAR(255),
@@ -259,7 +263,7 @@ sub init_schema {
         data TEXT,
         datum_id INTEGER
     )',
-    'CREATE TEMP TABLE data_wiggle_data (
+    'CREATE TABLE data_wiggle_data (
         data_id INTEGER,
         wiggle_data_id INTEGER
     )',
@@ -420,12 +424,13 @@ sub save_dbxref {
   my $dbxref = shift;
   $queries{'dbxref_ins'} = ModENCODE::Cache::dbh->prepare('INSERT INTO dbxref (accession, version, db_id) VALUES(?, ?, ?)') unless $queries{'dbxref_ins'};
   $queries{'dbxref_upd'} = ModENCODE::Cache::dbh->prepare('UPDATE dbxref SET accession = ?, version = ?, db_id = ? WHERE dbxref_id = ?') unless $queries{'dbxref_upd'};
+
   modification_notification();
   if (!$dbxref->get_id()) {
     $queries{'dbxref_ins'}->execute($dbxref->get_accession, $dbxref->get_version, $dbxref->get_db_id);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $dbxref->set_id($id);
-    log_error "Saving dbxref " . $dbxref->get_accession() . " with id $id.", "debug";
+    log_error "Saving dbxref " . $dbxref->get_accession() . " with id $id.", "debug" if DEBUG;
     return $id;
   } else {
     my $id = $dbxref->get_id();
@@ -1086,13 +1091,14 @@ sub save_feature {
     $queries{'feature_ins'}->execute($feature->get_name, $feature->get_uniquename, $feature->get_residues, $feature->get_seqlen, $feature->get_timeaccessioned, $feature->get_timelastmodified, $feature->get_is_analysis, $feature->get_primary_dbxref_id, $feature->get_organism_id, $feature->get_type_id);
     my $id = ModENCODE::Cache::dbh->func('last_insert_rowid');
     $feature->set_id($id);
-    log_error "Saving feature " . $feature->get_uniquename() . " with id $id.", "debug";
+    log_error "Saving feature " . $feature->get_uniquename() . " with id $id.", "debug" if DEBUG;
   } else {
     modification_notification();
     my $id = $feature->get_id();
     $queries{'feature_upd'}->execute($feature->get_name, $feature->get_uniquename, $feature->get_residues, $feature->get_seqlen, $feature->get_timeaccessioned, $feature->get_timelastmodified, $feature->get_is_analysis, $feature->get_primary_dbxref_id, $feature->get_organism_id, $feature->get_type_id, $id);
     log_error "Updating feature " . $feature->get_uniquename() . " with id $id.", "debug";
   }
+
   # Update links to feature locations
   $queries{'del_feature_locs'}->execute($feature->get_id);
   foreach my $featureloc (@{$feature->get_locations}) {
@@ -1299,7 +1305,8 @@ sub load_feature_relationship {
 
 
 sub modification_notification {
-  if ($query_count++ % 3000 == 0) {
+  if ($query_count++ % 20000 == 0) {
+    log_error "Beginning new transaction", "notice";
     ModENCODE::Cache::dbh->do("END TRANSACTION");
     ModENCODE::Cache::dbh->do("BEGIN TRANSACTION");
   }
