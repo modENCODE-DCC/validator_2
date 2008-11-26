@@ -93,6 +93,7 @@ use Carp qw(croak carp);
 
 use constant ESTS_AT_ONCE => 40;
 use constant MAX_TRIES => 2;
+use constant DEBUG => 0;
 
 my %seen_data                   :ATTR( :default<{}> );
 my %cached_est_files            :ATTR( :default<{}> );
@@ -141,7 +142,7 @@ sub validate {
       $self->add_est_name($est);
     }
 
-    log_error "Validating presence of " . $self->num_data . " ESTs.", "notice", ">";
+    log_error "Validating presence of ESTs in " . $self->num_data . " files.", "notice", ">";
 
     log_error "Checking Chado databases...", "notice", ">";
     foreach my $parse (
@@ -156,22 +157,27 @@ sub validate {
       }
 
       log_error "Checking for " . $self->num_est_names . " ESTs already in the $parser_name database...", "notice", ">";
+      my $est_num = 0;
+      my $now = time();
       while (my $accession = $self->next_est_name) {
+        if (++$est_num % 1000 == 0) {
+          log_error "Processed " . $est_num . " ESTs in " . (time() - $now) . " seconds.", "notice";
+          $now = time();
+        }
         my $feature = $parser->get_feature_by_genbank_id($accession);
         next unless $feature;
 
-        log_error "Found feature in $parser_name for $accession.", "debug";
+        log_error "Found feature in $parser_name for $accession.", "debug" if DEBUG;
         my $cvterm = $feature->get_object->get_type(1)->get_name;
         my $cv = $feature->get_object->get_type(1)->get_cv(1)->get_name;
         my $canonical_cvname = ModENCODE::Config::get_cvhandler()->get_cv_by_name($cv)->{'names'}->[0];
 
-        if ($cvterm ne "EST") {
-          log_error "Found a feature in $parser_name, but it is of type '$cv:$cvterm', not 'SO:EST'. Not using it.", "warning";
-          next;
+        if ($cvterm ne "EST" && $cvterm ne "mRNA" && $cvterm ne "cDNA") {
+          log_error "Found a feature for " . $accession . " in $parser_name, but it is of type '$cv:$cvterm', not 'SO:EST'. Using it anyway.", "warning";
         }
         if ($canonical_cvname ne "SO") {
           # TODO: Use this and update the CV type?
-          log_error "Found a feature in $parser_name, but it is of type '$cv:$cvterm', not 'SO:EST'. Not using it.", "warning";
+          log_error "Found a feature for " . $accession . " in $parser_name, but it is of type '$cv:$cvterm', not 'SO:EST'. Not using it.", "warning";
           next;
         }
 
@@ -205,7 +211,7 @@ sub validate {
       }
       croak "Whut" unless scalar(@batch_query);
 
-      log_error "Fetching batch of " . scalar(@batch_query) . " ESTs.", "notice", ">";
+      log_error "Fetching batch of " . scalar(@batch_query) . " ESTs, " . $self->num_est_names . " remaining.", "notice", ">";
 
       my $done = 0;
       while ($done++ < MAX_TRIES) {
