@@ -759,6 +759,10 @@ sub get_type {
   $sth->execute($cvterm_id);
   my $row = $sth->fetchrow_hashref();
   map { $row->{$_} = xml_unescape($row->{$_}) } keys(%$row);
+
+  #XXX: Rename SO:so terms to SO:mRNA
+  $row->{'name'} = "mRNA" if $row->{'name'} eq "so";
+
   my $cvterm = new ModENCODE::Chado::CVTerm({
       'name' => $row->{'name'},
       'definition' => $row->{'definition'},
@@ -896,9 +900,20 @@ sub get_feature_by_genbank_id {
     WHERE 
     db.name = 'GB' 
     AND o.genus = 'Drosophila' AND o.species = 'melanogaster'
-    AND (cv.name = 'SO' OR cv.name = 'sequence') AND (cvt.name != 'gene')
+    AND cv.name IN('SO', 'sequence') AND cvt.name != 'gene'
     AND dbx.accession = ?
+    LIMIT 1
     ");
+  # TODO: Don't require fly
+#    SELECT f.feature_id FROM feature f 
+#    INNER JOIN feature_dbxref fdbx ON f.feature_id = fdbx.feature_id 
+#    INNER JOIN dbxref dbx ON fdbx.dbxref_id = dbx.dbxref_id 
+#    WHERE 
+#    dbx.db_id = 13 AND -- GB
+#    f.type_id = 256
+#    AND dbx.accession = ?
+#    LIMIT 1
+
   $sth->execute($genbank_id);
   my $row = $sth->fetchrow_hashref();
   return undef if (!$row || !$row->{'feature_id'});
