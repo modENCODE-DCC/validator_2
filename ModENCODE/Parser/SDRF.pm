@@ -813,12 +813,6 @@ sub create_protocol_attribute {
 
 sub create_datum_attribute {
   my ($self, $datum, $value, $heading, $name, $type, $termsource, $values) = @_;
-  my $attribute = new ModENCODE::Chado::DatumAttribute({
-      'heading' => $heading,
-      'name' => $name,
-      'value' => $value,
-      'datum' => $datum,
-    });
 
   # Map functions to values; order matters (should match inputs)
   my ($termsource) = map { &$_($self, $values, $value) } @$termsource;
@@ -832,7 +826,6 @@ sub create_datum_attribute {
             'name' => $cv,
           }),
       });
-    $attribute->set_type($type);
   } else {
     $type = new ModENCODE::Chado::CVTerm({
         'name' => 'string',
@@ -840,12 +833,20 @@ sub create_datum_attribute {
             'name' => 'xsd',
           }),
       });
-    $attribute->set_type($type);
   }
+
+  my $attribute = new ModENCODE::Chado::DatumAttribute({
+      'heading' => $heading,
+      'name' => $name,
+      'value' => $value,
+      'datum' => $datum,
+      'type' => $type,
+    });
+
 
   # Term source
   if ($termsource) {
-    $attribute->set_termsource($termsource);
+    $attribute->get_object->set_termsource($termsource);
   }
 
   return $attribute;

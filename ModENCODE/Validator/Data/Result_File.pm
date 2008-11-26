@@ -137,17 +137,19 @@ sub validate {
       my @attributes = $datum_obj->get_attributes;
       my $current_time = time();
       my $current_date = Date::Format::time2str("%Y-%m-%d", $current_time, 'GMT');
-      push @attributes, new ModENCODE::Chado::Attribute({
+      push @attributes, new ModENCODE::Chado::DatumAttribute({
           'value' => $url,
           'type' => new ModENCODE::Chado::CVTerm({'name' => 'anyURI', 'cv' => new ModENCODE::Chado::CV({'name' => 'xsd'})}),
           'name' => 'URL',
-          'heading' => 'File Download URL'
+          'heading' => 'File Download URL',
+          'datum' => $datum,
         });
-      push @attributes, new ModENCODE::Chado::Attribute({
+      push @attributes, new ModENCODE::Chado::DatumAttribute({
           'value' => $current_date,
           'type' => new ModENCODE::Chado::CVTerm({'name' => 'date', 'cv' => new ModENCODE::Chado::CV({'name' => 'xsd'})}),
           'name' => 'Date',
-          'heading' => 'File Download Date'
+          'heading' => 'File Download Date',
+          'datum' => $datum,
         });
       my $new_datum = new ModENCODE::Chado::Data({
           'heading' => $datum_obj->get_heading,

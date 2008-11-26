@@ -12,20 +12,20 @@ sub new {
   if ($cached_attribute) {
     # Update any cached attribute
     my $need_save = 0;
-    if ($temp->get_value() && !($cached_attribute->get_value())) {
-      $cached_attribute->set_value($temp->get_value);
+    if ($temp->get_value() && !($cached_attribute->get_object->get_value())) {
+      $cached_attribute->get_object->set_value($temp->get_value);
       $need_save = 1;
     }
-    if ($temp->get_termsource() && !($cached_attribute->get_termsource())) {
-      $cached_attribute->set_termsource($temp->get_termsource);
+    if ($temp->get_termsource() && !($cached_attribute->get_object->get_termsource())) {
+      $cached_attribute->get_object->set_termsource($temp->get_termsource);
       $need_save = 1;
     }
-    if ($temp->get_type() && !($cached_attribute->get_type())) {
-      $cached_attribute->set_type($temp->get_type);
+    if ($temp->get_type() && !($cached_attribute->get_object->get_type())) {
+      $cached_attribute->get_object->set_type($temp->get_type);
       $need_save = 1;
     }
-    if (@{$temp->get_organisms()} && !(@{$cached_attribute->get_organisms()})) {
-      $cached_attribute->set_organisms($temp->get_organisms);
+    if (@{$temp->get_organisms()} && !(@{$cached_attribute->get_object->get_organisms()})) {
+      $cached_attribute->get_object->set_organisms($temp->get_organisms);
       $need_save = 1;
     }
     ModENCODE::Cache::save_attribute($cached_attribute) if $need_save;

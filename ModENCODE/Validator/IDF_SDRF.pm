@@ -247,7 +247,7 @@ sub validate {
       if (defined($datum->get_name()) && length($datum->get_name())) {
         push @{$named_fields{$protocol_name}}, $datum->get_name();
       }
-      foreach my $datum_attribute ($datum->get_attributes) {
+      foreach my $datum_attribute ($datum->get_attributes(1)) {
         if (defined($datum_attribute->get_name()) && length($datum_attribute->get_name())) {
           push @{$named_fields{$protocol_name}}, $datum_attribute->get_name();
         }

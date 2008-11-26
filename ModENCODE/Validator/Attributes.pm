@@ -151,8 +151,8 @@ sub validate {
   my $experiment = $self->get_experiment;
 
   my @all_attributes = (
-    map { $_->get_object->get_attributes } ModENCODE::Cache::get_all_objects('protocol'),
-    map { $_->get_object->get_attributes } ModENCODE::Cache::get_all_objects('data'),
+    (map { $_->get_object->get_attributes } ModENCODE::Cache::get_all_objects('protocol')),
+    (map { $_->get_object->get_attributes } ModENCODE::Cache::get_all_objects('data')),
   );
 
 
