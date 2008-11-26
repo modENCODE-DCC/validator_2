@@ -22,6 +22,7 @@ use ModENCODE::Validator::Wiki;
 use ModENCODE::Validator::Attributes;
 use ModENCODE::Validator::Data;
 use ModENCODE::Validator::TermSources;
+use ModENCODE::Chado::XMLWriter;
 
 ModENCODE::ErrorHandler::set_logtype(ModENCODE::ErrorHandler::LOGGING_PREFIX_ON);
 ModENCODE::Config::set_cfg($root_dir . 'validator.ini');
@@ -124,13 +125,16 @@ log_error "Done.", "notice", "<";
 log_error "Validated successfully!", "notice", "<";
 
 log_error "Writing ChadoXML; this may take a while...", "notice", ">";
-#my $xmlwriter = new ModENCODE::Chado::XMLWriter();
-
-
+my $xmlwriter = new ModENCODE::Chado::XMLWriter();
+if ($ARGV[1] && !$xmlwriter->set_output_file($ARGV[1])) {
+  log_error "Failed to open " . $ARGV[1] . " for writing.", "error", "<";
+  exit;
+}
+$xmlwriter->write_chadoxml($experiment);
 log_error "Done. All tasks complete.", "notice", "<";
 
 #print $experiment->to_string() . "\n";
-#ModENCODE::Cache::destroy();
+ModENCODE::Cache::destroy();
 
 
 1;
