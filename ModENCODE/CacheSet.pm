@@ -6,8 +6,8 @@ use Carp qw(croak);
 use ModENCODE::Cache::CachedObject;
 use ModENCODE::ErrorHandler qw(log_error);
 
-use constant CACHE_SIZE => 60000;
-use constant CACHE_SHRINK_AT => 75000;
+use constant CACHE_SIZE => 100000;
+use constant CACHE_SHRINK_AT => 200000;
 use constant DEBUG => 1;
 
 my %name                :ATTR( :name<name> );
@@ -116,7 +116,6 @@ sub move_in_cache {
 sub add_to_cache {
   my $self = shift;
   my $obj = shift;
-  $obj->get_object->save;
   my $curcache = $cacheobjs{ident $self};
   while (scalar(@_)) {
     my $key = shift;
@@ -171,7 +170,7 @@ sub notify_object_loaded {
   $added_objects{ident $self}++;
   if ($added_objects{ident $self} >= CACHE_SHRINK_AT) {
     my ($shrunk_objs, $big_objs) = $self->shrink_cache();
-    log_error "Shrunk $shrunk_objs " . $self->get_name() . " objects, left $big_objs expanded; total " . scalar(@{$cacheobjs_by_time{ident $self}}) . " cached objects.", "debug" if DEBUG;
+    log_error "Shrunk $shrunk_objs " . $self->get_name() . " objects, left $big_objs expanded; total " . scalar(@{$cacheobjs_by_time{ident $self}}) . " cached objects.", "notice";
   }
 }
 
