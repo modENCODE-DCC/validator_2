@@ -121,6 +121,7 @@ use ModENCODE::Cache;
 
 # Attributes
 my %dbxref_id        :ATTR( :name<id>,          :default<undef> );
+my %dirty            :ATTR( :default<1> );
 my %accession        :ATTR( :get<accession>,    :init_arg<accession> );
 my %version          :ATTR( :get<version>,      :init_arg<version>,     :default<''> );
 
@@ -128,6 +129,15 @@ my %version          :ATTR( :get<version>,      :init_arg<version>,     :default
 my %db               :ATTR( :init_arg<db> );
 
 use Carp qw(confess);
+
+sub dirty {
+  $dirty{ident shift} = 1;
+}
+
+sub is_dirty {
+  return $dirty{ident shift};
+}
+
 
 sub new_no_cache {
   return Class::Std::new(@_);
@@ -177,7 +187,11 @@ sub equals {
 }
 
 sub save {
-  ModENCODE::Cache::save_dbxref(shift);
+  my $self = shift;
+  if ($dirty{ident $self}) {
+    $dirty{ident $self} = 0;
+    ModENCODE::Cache::save_dbxref($self);
+  }
 }
 
 

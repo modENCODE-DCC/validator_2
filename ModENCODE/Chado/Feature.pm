@@ -239,23 +239,41 @@ use Carp qw(carp croak);
 use ModENCODE::ErrorHandler qw(log_error);
 
 # Attributes
-my %feature_id       :ATTR( :name<id>,                  :default<undef> );
-my %name             :ATTR( :name<name>,                :default<undef> );
-my %uniquename       :ATTR( :get<uniquename>,           :init_arg<uniquename>, :default<undef> );
-my %residues         :ATTR( :name<residues>,            :default<undef> );
-my %seqlen           :ATTR( :name<seqlen>,              :default<undef> );
-my %timeaccessioned  :ATTR( :name<timeaccessioned>,     :default<undef> );
-my %timelastmodified :ATTR( :name<timelastmodified>,    :default<undef> );
-my %is_analysis      :ATTR( :name<is_analysis>,         :default<0> );
+my %feature_id       :ATTR( :name<id>,                                                  :default<undef> );
+my %dirty            :ATTR( :default<1> );
+my %name             :ATTR( :get<name>,                 :init_arg<name>,                :default<undef> );
+my %uniquename       :ATTR( :get<uniquename>,           :init_arg<uniquename>,          :default<undef> );
+my %residues         :ATTR( :get<residues>,             :init_arg<residues>,            :default<undef> );
+my %seqlen           :ATTR( :get<seqlen>,               :init_arg<seqlen>,              :default<undef> );
+my %timeaccessioned  :ATTR( :get<timeaccessioned>,      :init_arg<timeaccessioned>,     :default<undef> );
+my %timelastmodified :ATTR( :get<timelastmodified>,     :init_arg<timelastmodified>,    :default<undef> );
+my %is_analysis      :ATTR( :get<is_analysis>,          :init_arg<is_analysis>,         :default<0> );
 
 # Relationships
-my %organism         :ATTR(                             :init_arg<organism>,       :default<undef> );
-my %type             :ATTR(                             :init_arg<type>,           :default<undef> );
-my %analysisfeatures :ATTR( :name<analysisfeatures>,                               :default<[]> );
-my %locations        :ATTR( :name<locations>,                                      :default<[]> );
-my %relationships    :ATTR( :set<relationships>,        :init_arg<relationships>,  :default<[]> );
-my %dbxrefs          :ATTR(                             :init_arg<dbxrefs>,        :default<[]> );
-my %primary_dbxref   :ATTR(                             :init_arg<primary_dbxref>, :default<undef> );
+my %organism         :ATTR(                             :init_arg<organism>,            :default<undef> );
+my %type             :ATTR(                             :init_arg<type>,                :default<undef> );
+my %analysisfeatures :ATTR( :get<analysisfeatures>,     :init_arg<analysisfeatures>,    :default<[]> );
+my %locations        :ATTR( :get<locations>,            :init_arg<locations>,           :default<[]> );
+my %relationships    :ATTR( :set<relationships>,        :init_arg<relationships>,       :default<[]> );
+my %dbxrefs          :ATTR(                             :init_arg<dbxrefs>,             :default<[]> );
+my %primary_dbxref   :ATTR(                             :init_arg<primary_dbxref>,      :default<undef> );
+
+sub set_name { my ($self, $name) = @_; $self->dirty(); $name{ident $self} = $name; }
+sub set_residues { my ($self, $residues) = @_; $self->dirty(); $residues{ident $self} = $residues; }
+sub set_seqlen { my ($self, $seqlen) = @_; $self->dirty(); $seqlen{ident $self} = $seqlen; }
+sub set_timeaccessioned { my ($self, $timeaccessioned) = @_; $self->dirty(); $timeaccessioned{ident $self} = $timeaccessioned; }
+sub set_timelastmodified { my ($self, $timelastmodified) = @_; $self->dirty(); $timelastmodified{ident $self} = $timelastmodified; }
+sub set_is_analysis { my ($self, $is_analysis) = @_; $self->dirty(); $is_analysis{ident $self} = $is_analysis; }
+sub set_analysisfeatures { my ($self, $analysisfeatures) = @_; $self->dirty(); $analysisfeatures{ident $self} = $analysisfeatures; }
+sub set_locations { my ($self, $locations) = @_; $self->dirty(); $locations{ident $self} = $locations; }
+
+sub dirty {
+  $dirty{ident shift} = 1;
+}
+
+sub is_dirty {
+  return $dirty{ident shift};
+}
 
 sub new_no_cache {
   return Class::Std::new(@_);
@@ -412,6 +430,7 @@ sub add_dbxref {
 sub set_dbxrefs {
   my ($self, $dbxrefs) = @_;
   $dbxrefs{ident $self} = [];
+  $self->dirty();
   if (!scalar(@$dbxrefs)) {
     delete $primary_dbxref{ident $self};
     return;
@@ -427,6 +446,7 @@ sub set_dbxrefs {
 
 sub set_primary_dbxref {
   my ($self, $dbxref) = @_;
+  $self->dirty();
   ($dbxref->get_object->isa('ModENCODE::Chado::DBXref')) or croak("Can't add a " . ref($dbxref) . " as a primary_dbxref.");
   my ($matching_dbxref) = grep { $dbxref->get_id == $_->get_id } $self->get_dbxrefs;
   if (!$matching_dbxref) {
@@ -438,12 +458,14 @@ sub set_primary_dbxref {
 
 sub set_type {
   my ($self, $type) = @_;
+  $self->dirty();
   ($type->get_object->isa('ModENCODE::Chado::CVTerm')) or croak("Can't add a " . ref($type) . " as a type.");
   $type{ident $self} = $type;
 }
 
 sub set_organism {
   my ($self, $organism) = @_;
+  $self->dirty();
   ($organism->get_object->isa('ModENCODE::Chado::Organism')) or Carp::confess("Can't add a " . ref($organism) . " as an organism.");
   $organism{ident $self} = $organism;
 }
@@ -557,7 +579,11 @@ sub to_string {
 }
 
 sub save {
-  ModENCODE::Cache::save_feature(shift);
+  my $self = shift;
+  if ($dirty{ident $self}) {
+    $dirty{ident $self} = 0;
+    ModENCODE::Cache::save_feature($self);
+  }
 }
 
 1;
