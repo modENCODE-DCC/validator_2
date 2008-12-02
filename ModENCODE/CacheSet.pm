@@ -2,7 +2,7 @@ package ModENCODE::CacheSet;
 
 use strict;
 use Class::Std;
-use Carp qw(croak);
+use Carp qw(croak confess);
 use ModENCODE::Cache::CachedObject;
 use ModENCODE::ErrorHandler qw(log_error);
 
@@ -56,24 +56,19 @@ sub update_cache_to {
   my ($self, $oldpath, $newpath) = @_;
   my $old_location = $self->get_from_cache(@$oldpath);
   my $new_location = $cacheobjs{ident $self};
-  while (scalar(@$newpath)) {
-    my $key = shift @$newpath;
+  my @tmpnewpath = @$newpath;
+  while (scalar(@tmpnewpath)) {
+    my $key = shift @tmpnewpath;
     $new_location->{$key} = {} unless defined($new_location->{$key});
     $new_location = $new_location->{$key};
-  }
-
-  foreach my $key (keys(%$old_location)) {
-    # add to
-    if ($new_location->{$key}) {
-      croak "Can't merge old objects from " . join(",", @$oldpath) . " into " . join(",", @$newpath);
-    }
-    $new_location->{$key} = $old_location->{$key};
   }
 
   my @oldpath_parent = @$oldpath;
   my $key = pop @oldpath_parent;
   my $old_location_parent = $self->get_from_cache(@oldpath_parent);
   delete($old_location_parent->{$key});
+
+  return ($old_location, $new_location);
 }
 
 sub move_in_cache {

@@ -326,7 +326,38 @@ sub update_db {
   $cacheobj->set_content($new_db);
 
   # Update DBXref cacheset to point at this DB
-  $cachesets{'dbxref'}->update_cache_to([ $old_db->get_id ], [ $new_db->get_id ]);
+  my ($old_location, $new_location) = $cachesets{'dbxref'}->update_cache_to([ $old_db->get_id ], [ $new_db->get_id ]);
+  foreach my $accession_key (keys(%$old_location)) {
+    if (!$new_location->{$accession_key}) {
+      # Move from old location to new location
+      $new_location->{$accession_key} = $old_location->{$accession_key};
+    } else {
+      # Something already exists at the same key
+      # For DBXrefs, this means a DBXref with the same accession ($accession_key)
+      # since the cacheset looks like {$db_id}->{$accession}->{$version} = $dbxref
+      foreach my $version_key (keys(%{$old_location->{$accession_key}})) {
+        if (!$new_location->{$accession_key}->{$version_key}) {
+          # If the versions are different, it's still a merge
+          $new_location->{$accession_key}->{$version_key} = $old_location->{$accession_key}->{$version_key};
+        } else {
+          # The versions are the same, too; check and see if these are really the same DBXref but with different DBs
+          my $in_place_dbxref = $new_location->{$accession_key}->{$version_key}->get_object;
+          my $incoming_dbxref = $old_location->{$accession_key}->{$version_key}->get_object;
+          if (
+            $in_place_dbxref->get_accession eq $incoming_dbxref->get_accession &&
+            $in_place_dbxref->get_version eq $incoming_dbxref->get_version &&
+            $in_place_dbxref->get_db_id eq $old_db->get_id && $incoming_dbxref->get_db_id == $new_db->get_id
+          ) {
+            log_error "Replacing in_place_dbxref with incoming_dbxref because everything is the same except an out-of-date DB.", "debug";
+            # Require that the existing one be reloaded as the new one, just in case
+            $new_location->{$accession_key}->{$version_key}->set_content($old_location->{$accession_key}->{$version_key}->get_id);
+            # Replace the existing one with the new one in the cache
+            $new_location->{$accession_key}->{$version_key} = $old_location->{$accession_key}->{$version_key};
+          }
+        }
+      }
+    }
+  }
 
   return $cacheobj;
 }
@@ -367,6 +398,39 @@ sub update_cv {
 
   # Update CVXref cacheset to point at this CV
   $cachesets{'cvterm'}->update_cache_to([ $old_cv->get_id ], [ $new_cv->get_id ]);
+  # Update CVTerm cacheset to point at this CV
+  my ($old_location, $new_location) = $cachesets{'cvterm'}->update_cache_to([ $old_cv->get_id ], [ $new_cv->get_id ]);
+  foreach my $name_key (keys(%$old_location)) {
+    if (!$new_location->{$name_key}) {
+      # Move from old location to new location
+      $new_location->{$name_key} = $old_location->{$name_key};
+    } else {
+      # Something already exists at the same key
+      # For CVTerms, this means a DBXref with the same name ($name_key)
+      # since the cacheset looks like {$cv_id}->{$name}->{$obsolete} = $cvterm
+      foreach my $obsolete_key (keys(%{$old_location->{$name_key}})) {
+        if (!$new_location->{$name_key}->{$obsolete_key}) {
+          # If the obsoletes are different, it's still a merge
+          $new_location->{$name_key}->{$obsolete_key} = $old_location->{$name_key}->{$obsolete_key};
+        } else {
+          # The obsoletes are the same, too; check and see if these are really the same DBXref but with different DBs
+          my $in_place_cvterm = $new_location->{$name_key}->{$obsolete_key}->get_object;
+          my $incoming_cvterm = $old_location->{$name_key}->{$obsolete_key}->get_object;
+          if (
+            $in_place_cvterm->get_name eq $incoming_cvterm->get_name &&
+            $in_place_cvterm->get_is_obsolete eq $incoming_cvterm->get_is_obsolete &&
+            $in_place_cvterm->get_cv_id eq $old_cv->get_id && $incoming_cvterm->get_cv_id == $new_cv->get_id
+          ) {
+            log_error "Replacing in_place_cvterm with incoming_cvterm because everything is the same except an out-of-date CV.", "debug";
+            # Require that the existing one be reloaded as the new one, just in case
+            $new_location->{$name_key}->{$obsolete_key}->set_content($old_location->{$name_key}->{$obsolete_key}->get_id);
+            # Replace the existing one with the new one in the cache
+            $new_location->{$name_key}->{$obsolete_key} = $old_location->{$name_key}->{$obsolete_key};
+          }
+        }
+      }
+    }
+  }
 
   return $cacheobj;
 }
