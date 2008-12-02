@@ -91,8 +91,8 @@ use Class::Std;
 use ModENCODE::ErrorHandler qw(log_error);
 use Carp qw(croak carp);
 
-use constant ESTS_AT_ONCE => 40;
-use constant MAX_TRIES => 2;
+use constant ESTS_AT_ONCE => 200;
+use constant MAX_TRIES => 4;
 use constant DEBUG => 0;
 
 my %seen_data                   :ATTR( :default<{}> );
