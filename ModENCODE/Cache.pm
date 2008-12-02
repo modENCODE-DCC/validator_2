@@ -200,7 +200,8 @@ sub init_schema {
         is_analysis INTEGER,
         dbxref_id INTEGER,
         organism_id INTEGER,
-        type_id INTEGER
+        type_id INTEGER,
+        UNIQUE (uniquename, type_id)
     )',
     'CREATE TABLE featureloc (
         featureloc_id INTEGER PRIMARY KEY,
@@ -452,6 +453,7 @@ sub load_dbxref {
   my $row = $queries{'dbxref_get'}->fetchrow_hashref();
   $row->{'db'} = $cachesets{'db'}->get_from_id_cache($row->{'db'});
   my $dbxref = ModENCODE::Chado::DBXref->new_no_cache($row);
+  $dbxref->clean();
   log_error "Loading DBXref " . $dbxref->get_accession . " from cache database (unshrinking).", "debug" if DEBUG;
   return $dbxref;
 }
@@ -1146,6 +1148,7 @@ sub load_feature {
   $row->{'type'} = $cachesets{'cvterm'}->get_from_id_cache($row->{'type'});
 
   my $feature = ModENCODE::Chado::Feature->new_no_cache($row);
+  $feature->clean();
   log_error "Loading feature " . $feature->get_uniquename . " from cache database (unshrinking).", "debug" if DEBUG;
 
   $queries{'feature_dbxrefs_get'} = ModENCODE::Cache::dbh->prepare('SELECT dbxref_id AS dbxref FROM feature_dbxref WHERE feature_id = ?') unless $queries{'feature_dbxrefs_get'};
@@ -1251,7 +1254,7 @@ sub add_feature_relationship_to_cache {
   $cachesets{'feature_relationship'}->add_to_id_cache($cacheobj, $feature_relationship->get_id);
 
   # Now save it for real
-  $feature_relationship->save unless $feature_relationship->get_id;
+  $feature_relationship->save;
 
   return $cacheobj;
 }
@@ -1275,7 +1278,7 @@ sub save_feature_relationship {
   } else {
     my $id = $feature_relationship->get_id();
     $queries{'feature_relationship_upd'}->execute($feature_relationship->get_subject_id, $feature_relationship->get_object_id, $feature_relationship->get_type_id, $feature_relationship->get_rank, $id);
-    log_error "Updating relationship " . $feature_relationship->get_subject_id() . " " . $feature_relationship->get_type(1)->get_name . " " . $feature_relationship->get_object_id . " with id $id.", "debug";
+    log_error "Updating relationship " . $feature_relationship->get_subject_id() . " " . $feature_relationship->get_type(1)->get_name . " " . $feature_relationship->get_object_id . " with id $id.", "debug" if DEBUG;
   }
 
   return $feature_relationship->get_id;
@@ -1297,6 +1300,7 @@ sub load_feature_relationship {
   $row->{'type'} = $cachesets{'cvterm'}->get_from_id_cache($row->{'type'});
 
   my $feature_relationship = ModENCODE::Chado::FeatureRelationship->new_no_cache($row);
+  $feature_relationship->clean();
   log_error "Loading relationship " . $feature_relationship->get_subject_id() . " " . $feature_relationship->get_type(1)->get_name . " " . $feature_relationship->get_object_id . " from cache database (unshrinking).", "debug" if DEBUG;
 
   return $feature_relationship;
