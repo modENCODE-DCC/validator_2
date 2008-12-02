@@ -136,6 +136,7 @@ use Carp qw(carp croak);
 
 # Attributes
 my %relationship_id  :ATTR( :name<id>,                          :default<undef> );
+my %dirty            :ATTR( :default<1> );
 my %rank             :ATTR( :get<rank>, :init_arg<rank>,        :default<0> );
 
 # Relationships
@@ -208,7 +209,23 @@ sub to_string {
 }
 
 sub save {
-  ModENCODE::Cache::save_feature_relationship(shift);
+  my $self = shift;
+  if ($dirty{ident $self}) {
+    $dirty{ident $self} = 0;
+    ModENCODE::Cache::save_feature_relationship($self);
+  }
+}
+
+sub clean {
+  $dirty{ident shift} = 0;
+}
+
+sub dirty {
+  $dirty{ident shift} = 1;
+}
+
+sub is_dirty {
+  return $dirty{ident shift};
 }
 
 1;

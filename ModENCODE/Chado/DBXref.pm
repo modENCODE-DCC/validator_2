@@ -138,6 +138,9 @@ sub is_dirty {
   return $dirty{ident shift};
 }
 
+sub clean {
+  $dirty{ident shift} = 0;
+}
 
 sub new_no_cache {
   return Class::Std::new(@_);

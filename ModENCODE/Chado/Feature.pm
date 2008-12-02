@@ -271,6 +271,10 @@ sub dirty {
   $dirty{ident shift} = 1;
 }
 
+sub clean {
+  $dirty{ident shift} = 0;
+}
+
 sub is_dirty {
   return $dirty{ident shift};
 }
