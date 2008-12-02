@@ -227,6 +227,10 @@ sub parse
 		if (my $target = $attrs{Target}->[0]) {
 			my ($target_id, $target_start, $target_end,
 				$target_strand) = split(/ /, $target);
+
+                        $target_id = &{$this->{id_callback}}($target_id) 
+                          if ($this->{id_callback});
+
 			my $target_feature = $features{$target_id} ||
 				die "No feature found for target $target_id";
 			$target_strand = "+" if !$target_strand;
@@ -257,6 +261,8 @@ sub parse
 			}
 			my $rank = 0;
 			foreach my $object_id (@{$parents}) {
+                                $object_id = &{$this->{id_callback}}($object_id) 
+                                  if ($this->{id_callback});
 				my $object = $features{$object_id} ||
 					die "$object_id for relationship  " .
 					"with $id not found";
