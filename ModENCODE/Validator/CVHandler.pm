@@ -523,6 +523,7 @@ sub is_valid_accession {
 
     $cv = $self->get_cv_by_name($cvname);
   }
+  if ($cv->{'urltype'} eq '') { return $accession; } # Nothing doing if there's no associated CV (skip)
   if (!$cv->{'accessions'}->{$accession}) {
     # Haven't validated this accession one way or the other
     if (scalar(grep { $_->acc =~ m/:\Q$accession\E$/ }  @{$cv->{'nodes'}})) {
@@ -539,7 +540,7 @@ sub get_accession_for_term {
   my $cv = $self->get_cv_by_name($cvname);
   croak "Can't find CV $cvname, even though we should've validated by now" unless $cv;
 
-  if ($cv->{'urltype'} eq '') { return ($term, $cvname); } # Nothing doing if there's no associated CV (skip)
+  if ($cv->{'urltype'} eq '') { return $term; } # Nothing doing if there's no associated CV (skip)
 
   if ($cv->{'urltype'} =~ m/^URL_DBFields$/) {
     my $res = $self->get_url($cv->{'url'} . $term);
