@@ -488,6 +488,7 @@ sub write_analysis : PRIVATE {
     $self->println_to('analyses', "<timeexecuted>" . xml_escape($analysis->get_timeexecuted()) . "</timeexecuted>") if length($analysis->get_timeexecuted());
     $self->println_to('analyses', "</analysis>");
   }
+  return $id;
 }
 
 
