@@ -214,6 +214,7 @@ sub write_chadoxml {
   }
 
   # Assign IDs to and write the applied protocols
+  log_error "Writing protocols and data.", "notice", ">";
   my $ap_id = 0;
   for (my $i = 0; $i < $experiment->get_num_applied_protocol_slots(); $i++) {
     my $applied_protocols = $experiment->get_applied_protocols_at_slot($i);
@@ -222,6 +223,7 @@ sub write_chadoxml {
       $self->write_applied_protocol($applied_protocol);
     }
   }
+  log_error "Done.", "notice", ">";
 
 
   # Write the experiment
