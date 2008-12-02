@@ -224,57 +224,6 @@ sub validate {
   return $success;
 }
 
-sub old_validate {
-  my ($self, $experiment) = @_;
-  my $success = 1;
-  log_error "Validating types and controlled vocabularies.", "notice", ">";
-  # First, run through all the CVTerms to catch cases where we have a CVTerm with no DBXref
-  my $all_cvterms = ModENCODE::Chado::CVTerm::get_all_cvterms();
-  foreach my $cv (keys(%$all_cvterms)) {
-    foreach my $term (keys(%{$all_cvterms->{$cv}})) {
-      foreach my $is_obsolete (keys(%{$all_cvterms->{$cv}->{$term}})) {
-        my $cvterm = $all_cvterms->{$cv}->{$term}->{$is_obsolete};
-        if (!ModENCODE::Config::get_cvhandler()->is_valid_term($cvterm->get_cv()->get_name(), $cvterm->get_name())) {
-          log_error "Type '" . $cvterm->get_cv()->get_name() . ":" . $cvterm->get_name() . "' is not a valid CVTerm.";
-          $success = 0;
-        }
-        my $dbxref = $cvterm->get_dbxref();
-        if (!$dbxref) {
-          # If there's not a dbxref for the cvterm, try to find one
-          # First, get a DB based on the CV name
-          my $db = ModENCODE::Config::get_cvhandler()->get_db_object_by_cv_name($cvterm->get_cv()->get_name());
-          my $accession = ModENCODE::Config::get_cvhandler()->get_accession_for_term($cvterm->get_cv()->get_name(), $cvterm->get_name()) if $db;
-          if ($db && $accession) {
-            # If there's a DB and accession, create a new DBXref and add it to the cvterm
-            $cvterm->set_dbxref(new ModENCODE::Chado::DBXref({ 'accession' => $accession, 'db' => $db }));
-          } else {
-            log_error "Can't find accession for " . $cvterm->get_cv()->get_name . ":" . $cvterm->get_name(), "error";
-            $success = 0;
-          }
-        }
-      }
-    }
-  }
-  log_error "Done.", "notice", "<";
-  # Now run through all of the DBXrefs and make sure their DB names are consistent
-  log_error "Validating term sources and term source references.", "notice", ">";
-  my $all_dbxrefs = ModENCODE::Chado::DBXref::get_all_dbxrefs();
-  foreach my $db (keys(%$all_dbxrefs)) {
-    foreach my $accession (keys(%{$all_dbxrefs->{$db}})) {
-      foreach my $version (keys(%{$all_dbxrefs->{$db}->{$accession}})) {
-        my $dbxref = $all_dbxrefs->{$db}->{$accession}->{$version};
-        next if $dbxref->get_accession() eq "__ignore";
-        if (!$self->is_valid($dbxref, $dbxref->get_accession())) {
-          log_error "Termsource '" . $dbxref->get_db()->get_name() . "' (" . $dbxref->get_db()->get_url() . ") is not a valid DBXref.";
-          $success = 0;
-        }
-      }
-    }
-  }
-  log_error "Done.", "notice", "<";
-
-  return $success;
-}
 sub merge_chado_feature : PRIVATE {
   my ($self, $feature, $seen_objects) = @_;
 
