@@ -323,7 +323,7 @@ sub write_experiment_prop : PRIVATE {
     $self->println("<value>" . xml_escape($experiment_prop->get_value()) . "</value>");
     $self->println("<rank>" . xml_escape($experiment_prop->get_rank()) . "</rank>");
     if ($experiment_prop->get_termsource()) {
-      $self->println("<termsource_id>" . $self->write_dbxref($experiment_prop->get_termsource(1)) .  "</termsource_id>");
+      $self->println("<dbxref_id>" . $self->write_dbxref($experiment_prop->get_termsource(1)) .  "</dbxref_id>");
     }
     if ($experiment_prop->get_type()) {
       $self->println("<type_id>" . $self->write_cvterm($experiment_prop->get_type(1)) . "</type_id>");
