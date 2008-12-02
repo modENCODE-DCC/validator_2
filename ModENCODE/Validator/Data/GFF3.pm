@@ -306,6 +306,7 @@ sub validate {
     my $group_num = 0;
     while ($group_iter->has_next()) {
       log_error "Processing GFF feature group #$group_num.", "notice", ">";
+      $group_num++;
       my @features = $group_iter->next();
       log_error scalar(@features) . " features found.", "notice";
       foreach my $feature (@features) {
@@ -322,9 +323,12 @@ sub validate {
   return $success;
 }
 
+my $gff_counter = 1;
 sub id_callback {
   my ($id, $name, $seqid, $source, $type, $start, $end, $score, $strand, $phase) = @_;
   # TODO: Generate ID better
+  # In particular, change gff_ to filename and/or experiment_num
+  $id ||= $name || "gff_" . sprintf("ID%.6d", ++$gff_counter);
   return $id;
 }
 
