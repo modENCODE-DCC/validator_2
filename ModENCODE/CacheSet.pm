@@ -169,6 +169,7 @@ sub notify_object_loaded {
   my $self = shift;
   $added_objects{ident $self}++;
   if ($added_objects{ident $self} >= CACHE_SHRINK_AT) {
+    log_error "Shrinking cache of " . $self->get_name() . " objects...", "notice";
     my ($shrunk_objs, $big_objs) = $self->shrink_cache();
     log_error "Shrunk $shrunk_objs " . $self->get_name() . " objects, left $big_objs expanded; total " . scalar(@{$cacheobjs_by_time{ident $self}}) . " cached objects.", "notice";
   }
