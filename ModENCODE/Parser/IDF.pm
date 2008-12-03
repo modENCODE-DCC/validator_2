@@ -450,9 +450,13 @@ sub BUILD {
                                               });
                                           }
                                           if (defined($optional_metadata->{'Experiment Description'}) && length($optional_metadata->{'Experiment Description'}->[0])) {
+                                            my $description = $optional_metadata->{'Experiment Description'}->[0];
+                                            if ($description !~ m,^http://,) {
+                                              $description = "http://wiki.modencode.org/project/index.php?title=" . $description;
+                                            }
                                             push @experiment_properties, new ModENCODE::Chado::ExperimentProp({
                                                 'experiment' => $experiment_obj,
-                                                'value' => $optional_metadata->{'Experiment Description'}->[0],
+                                                'value' => $description,
                                                 'type' => new ModENCODE::Chado::CVTerm({'name' => 'string', 'cv' => new ModENCODE::Chado::CV({'name' => 'xsd'})}),
                                                 'name' => 'Experiment Description',
                                               });
