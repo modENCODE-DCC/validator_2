@@ -407,16 +407,20 @@ sub write_feature : PRIVATE {
       $self->println_to('features', "<dbxref_id>" . $self->write_dbxref($feature_dbxref) . "</dbxref_id>");
       $self->println_to('features', "</feature_dbxref>");
     }
-    foreach my $feature_location (@{$feature->get_locations()}) {
-      $self->write_featureloc($feature_location, $id); # Don't put inside this feature object, but write later
-    }
     foreach my $analysisfeature (@{$feature->get_analysisfeatures()}) {
       $self->write_analysisfeature($analysisfeature, $id);
     }
+    $self->println_to('features', "</feature>");
+
+    # Don't put these inside the feature object; rather, write later
+    # That way any additional <feature> objects that need to be written 
+    # won't end up inside the above feature tag.
     foreach my $feature_relationship ($feature->get_relationships(1)) {
       $self->write_feature_relationship($feature_relationship);
     }
-    $self->println_to('features', "</feature>");
+    foreach my $feature_location (@{$feature->get_locations()}) {
+      $self->write_featureloc($feature_location, $id);
+    }
   }
   return $id;
 }
