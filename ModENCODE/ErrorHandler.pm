@@ -94,7 +94,7 @@ L<http://www.modencode.org>.
 
 =cut
 use strict;
-use constant DEBUG => 1;
+use constant DEBUG => 0;
 use Exporter 'import';
 use IO::Handle;
 use Class::Std;
