@@ -694,7 +694,7 @@ sub BUILD {
                                               my $term_obj = new ModENCODE::Chado::DBXref({
                                                 'db' => $term_source_obj,
                                                 'accession' => '__ignore',
-                                                'version' => $term_source_version,
+#                                                'version' => $term_source_version,
                                               });
 
                                               push @dbxrefs, $term_obj;
