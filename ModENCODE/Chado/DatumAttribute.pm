@@ -28,7 +28,7 @@ sub new {
       $cached_attribute->get_object->set_organisms($temp->get_organisms);
       $need_save = 1;
     }
-    ModENCODE::Cache::save_attribute($cached_attribute) if $need_save;
+    ModENCODE::Cache::save_attribute($cached_attribute->get_object) if $need_save;
     return $cached_attribute;
   }
   # This is a new attribute
