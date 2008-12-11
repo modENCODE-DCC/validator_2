@@ -275,7 +275,7 @@ sub BUILD {
                                         { 
                                           $return = sub {
                                             my ($self, $values) = @_;
-                                            my $value = shift(@$values);
+                                            my $value = shift(@$values) || undef;
                                             my $type = $item[5][0] || undef;
                                             return $self->create_datum($item[1], $value, $item[3], $type, $item[7], $item[8], $values);
                                           };
@@ -418,8 +418,7 @@ sub BUILD {
                                         { 
                                           $return = sub {
                                             my ($self, $values) = @_;
-                                            my $value = shift(@$values);
-                                            return [$value, $item[1], $item[3][0], $item[5][0], $item[7], $values];
+                                            return [ $item[1], $item[3][0], $item[5][0], $item[7], $values];
                                           };
                                         }
 
@@ -676,6 +675,7 @@ sub create_datum {
 
   # Map functions to values; order matters (should match datums)
   my ($termsource) = map { &$_($self, $values, $value) } @$termsource;
+
   my @attributes = map { &$_($self, $values) } @$attributes;
   @attributes = map { $self->create_datum_attribute($datum, @$_) } @attributes;
 
@@ -772,7 +772,8 @@ sub create_termsource {
 }
 
 sub create_protocol_attribute {
-  my ($self, $protocol, $value, $heading, $name, $type, $termsource, $values) = @_;
+  my ($self, $protocol, $heading, $name, $type, $termsource, $values) = @_;
+  my $value = shift @$values;
   my $attribute = new ModENCODE::Chado::ProtocolAttribute({
       'heading' => $heading,
       'name' => $name,
@@ -812,8 +813,9 @@ sub create_protocol_attribute {
 }
 
 sub create_datum_attribute {
-  my ($self, $datum, $value, $heading, $name, $type, $termsource, $values) = @_;
+  my ($self, $datum, $heading, $name, $type, $termsource, $values) = @_;
 
+  my $value = shift @$values;
   # Map functions to values; order matters (should match inputs)
   my ($termsource) = map { &$_($self, $values, $value) } @$termsource;
 

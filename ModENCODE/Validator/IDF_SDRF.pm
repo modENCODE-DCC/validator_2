@@ -315,7 +315,7 @@ sub validate {
     }
   }
   if (scalar(@undefined_term_sources)) {
-    log_error "The following term source(s) are referred to in the SDRF but not defined in the IDF!\n  '" . join("', '", map { $_->get_name() } @undefined_term_sources) . "'.";
+    log_error "The following term source(s) are referred to in the SDRF but not defined in the IDF!\n  '" . join("', '", map { $_->get_object->get_name() } @undefined_term_sources) . "'.";
     $success = 0;
   }
 
