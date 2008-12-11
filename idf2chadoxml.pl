@@ -65,6 +65,10 @@ $idf_validator = undef;
 $termsources = undef;
 $sdrfs = undef;
 $protocols = undef;
+if (!$experiment) {
+  log_error "Failed.", "error", "<";
+  exit;
+}
 log_error "Done.", "notice", "<";
 
 log_error "Validating presence of valid ModENCODE project/subproject names...", "notice", ">";
