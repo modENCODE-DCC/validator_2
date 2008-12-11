@@ -124,7 +124,6 @@ sub validate {
     # Check that CV names are consistent
     my $canonical_cvname = ModENCODE::Config::get_cvhandler()->get_cv_by_name($cv_obj->get_name)->{'names'}->[0];
     if ($cv_obj->get_name ne $canonical_cvname) {
-      log_error "TODO: Update CV " . $cv_obj->get_name . " with canonical name $canonical_cvname.", "error";
       # Update CV with new CV name
       my $new_cv = new ModENCODE::Chado::CV({
           'name' => $canonical_cvname || undef,
@@ -133,7 +132,6 @@ sub validate {
       $cv = ModENCODE::Cache::update_cv($cv_obj, $new_cv->get_object);
       log_error "Updated CV " . $cv_obj->get_name . " with canonical name $canonical_cvname.", "debug";
       $cv_obj = $cv->get_object;
-      $success = 0;
     }
 
     # Check that this CVTerm has a DBXref
