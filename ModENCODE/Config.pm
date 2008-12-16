@@ -155,6 +155,11 @@ sub set_cfg {
     $config_object = new Config::IniFiles(
       -file => $inifile
     );
+    if (!$config_object) {
+      print STDERR "Couldn't parse $inifile!\n";
+      print STDERR "  " . join("\n  ", @Config::IniFiles::errors) . "\n";
+      exit;
+    }
   }
 }
 
