@@ -429,6 +429,7 @@ sub validate {
       foreach my $missing_est (@not_found_by_acc) {
         log_error "Didn't find EST " . $missing_est . " anywhere!", "error";
       }
+      return $success;
       log_error "Done.", "notice", "<";
     }
     log_error "Done.", "notice", "<";
