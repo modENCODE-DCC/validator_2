@@ -225,6 +225,8 @@ sub validate {
       $message .= " " . $datum->get_object->get_heading . " [" . $datum->get_object->get_name . "].";
       log_error $message, "warning";
       next;
+    } elsif (!$validator) {
+      next;
     }
     $validator->add_datum_pair($ap_datum);
   }
