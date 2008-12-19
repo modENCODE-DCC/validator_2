@@ -346,7 +346,12 @@ sub validate {
       }
     }
     foreach my $datum (@data_to_remove) {
+      # Make sure this isn't the last remaining connection between these two protocols
       $sdrf_applied_protocol->remove_input_datum($datum);
+      if (!scalar(@{$sdrf_applied_protocol->get_input_data})) {
+        log_error "Removed the last datum that should be acting as the link between the previous protocol and " . $sdrf_protocol->get_object->get_name() . ". Perhaps you forgot to list it as an input in the IDF.", "error";
+        $success = 0;
+      }
     }
   }
 
