@@ -415,6 +415,11 @@ sub validate {
 
     # Collect all of the outputs from the wiki
     my ($output_type_defs) = grep { $_->get_name() =~ /^\s*output *types?\s*$/i } @{$wiki_protocol_def->get_values()};
+    if (!$output_type_defs) {
+      log_error "No outputs for protocol " . $protocol->get_object->get_name() . "! Please check your protocol definition on the wiki.", "error";
+      $success = 0;
+      next;
+    }
     my @wiki_output_definitions = sort { $a->{'cv'} . ":" . $a->{'term'} . ":" . $a->{'value'} <=> $b->{'cv'} . ":" . $b->{'term'} . ":" . $b->{'value'} } 
     map {
       my ($name, $cv, $term) = (undef, split(/:/, $_));
@@ -507,7 +512,7 @@ sub validate {
             # it will be used to tie together applied protocols
             next;
           } else {
-            log_error "Input term of " . $applied_protocol->get_protocol()->get_name() . ": " . $input->get_object->get_heading . " [" . $input->get_object->get_name . "] is named in the IDF/SDRF, but not in the wiki.", "warning" if ($input->get_object->get_name());
+            log_error "Input term of " . $applied_protocol->get_protocol(1)->get_name() . ": " . $input->get_object->get_heading . " [" . $input->get_object->get_name . "] is named in the IDF/SDRF, but not in the wiki.", "warning" if ($input->get_object->get_name());
           }
         }
         if (!$wiki_term) {
@@ -626,7 +631,7 @@ sub validate {
             # it will be used to tie together applied protocols
             next;
           } else {
-            log_error "Input term of " . $applied_protocol->get_protocol()->get_name() . ": " . $output->get_object->get_heading . " [" . $output->get_object->get_name . "] is named in the IDF/SDRF, but not in the wiki.", "warning" if ($output->get_object->get_name());
+            log_error "Input term of " . $applied_protocol->get_protocol(1)->get_name() . ": " . $output->get_object->get_heading . " [" . $output->get_object->get_name . "] is named in the IDF/SDRF, but not in the wiki.", "warning" if ($output->get_object->get_name());
           }
         }
         if (!$wiki_term) {
