@@ -195,10 +195,9 @@ sub validate {
       }
 
       my $fetch_results = parse_traceXML($trace_xml);
-      log_error "Retrieved " . scalar(@$fetch_results) . " traces. Verifying...", "notice", ">";
+      log_error "Retrieved " . scalar(@$fetch_results) . " traces. Verifying.", "notice";
 
       my ($not_found, $false_positives) = handle_search_results($fetch_results, @batch_query);
-      log_error "Done.", "notice", "<";
 
       if (scalar(@$false_positives)) {
         # TODO: Do more here?
