@@ -2,7 +2,6 @@ package ModENCODE::Cache;
 
 use strict;
 use DBI;
-use DBI::Profile;
 
 use Class::Std;
 use Carp qw(croak);
@@ -47,7 +46,6 @@ sub dbh {
     if (-e $filename) { unlink $filename; }
     $db_tempfile = $filename;
     $dbh = DBI->connect("dbi:SQLite:dbname=$filename", '', '', { AutoCommit => 0 });
-    $dbh->{Profile} = 2;
     $dbh->do("PRAGMA synchronous = OFF");
     $dbh->do("PRAGMA default_synchronous = OFF");
     $dbh->do("PRAGMA temp_store = MEMORY"); # Store indices in memory
@@ -1379,10 +1377,6 @@ sub load_feature_relationship {
 sub modification_notification {
   if ($query_count++ % 20000 == 0) {
     log_error "Beginning new transaction", "notice";
-    if (defined(ModENCODE::Cache::dbh->{Profile})) {
-      print STDERR "Profiling data:\n";
-      print STDERR ModENCODE::Cache::dbh->{Profile}->format . "\n";
-    }
     ModENCODE::Cache::dbh->do("END TRANSACTION");
     ModENCODE::Cache::dbh->do("BEGIN TRANSACTION");
   }
