@@ -224,8 +224,9 @@ sub validate {
     }
   }
   if (scalar(@undefined_protocols)) {
-    log_error "The following protocol(s) are referred to in the SDRF but not defined in the IDF!\n  '" . join("', '", map { $_->get_name() } @undefined_protocols) . "'.";
+    log_error "The following protocol(s) are referred to in the SDRF but not defined in the IDF!\n  '" . join("', '", map { $_->get_object->get_name() } @undefined_protocols) . "'.";
     $success = 0;
+    return $success;
   }
 
   # Parameters
