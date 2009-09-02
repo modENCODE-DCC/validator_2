@@ -480,13 +480,13 @@ sub BUILD {
                                         }
   submitting_project:                   submitting_project_group(?) submitting_project_subgroup(?)
   submitting_project_group_heading:     /Project *Group|Project(?!\s*Subgroup)/i
-  submitting_project_group:             <skip:'[\r\n \t]*'> submitting_project_group_heading <skip:'[ "]*\t[ "]*'> field_value(?) <skip:'[ "]*\t[ "\n\r]*'>
+  submitting_project_group:             <skip:'[\r\n \t]*'> submitting_project_group_heading <skip:'[ "]*\t[ "]*'> field_value(s?) <skip:'[ "]*\t[ "\n\r]*'>
                                         { 
                                           $optional_metadata->{'Project'} = [] if (!defined($optional_metadata->{'Project'}));
                                           push @{$optional_metadata->{'Project'}}, @{$item[4]};
                                         }
   submitting_project_subgroup_heading:  /Project *Subgroup|Lab/i
-  submitting_project_subgroup:          <skip:'[\r\n \t]*'> submitting_project_subgroup_heading <skip:'[ "]*\t[ "]*'> field_value(?) <skip:'[ "]*\t[ "\n\r]*'>
+  submitting_project_subgroup:          <skip:'[\r\n \t]*'> submitting_project_subgroup_heading <skip:'[ "]*\t[ "]*'> field_value(s?) <skip:'[ "]*\t[ "\n\r]*'>
                                         { 
                                           $optional_metadata->{'Lab'} = [] if (!defined($optional_metadata->{'Lab'}));
                                           push @{$optional_metadata->{'Lab'}}, @{$item[4]};
